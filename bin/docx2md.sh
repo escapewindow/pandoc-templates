@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Convenience script for converting a docx to a single gfm.
 
+function non_fatal_realpath() {
+  path=$(realpath -q "$1" || echo "$1")
+  echo "$path"
+}
+
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash/
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -28,6 +33,10 @@ do
     shift # past argument
     shift # past value
     ;;
+    -x|--overwrite)
+    OVERWRITE="1"
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -52,15 +61,15 @@ if [ ! -f "${INFILE}" ]; then
   echo "'${INFILE}' not found."
   exit 1
 else
-  INFILE="$(realpath "$INFILE")"
+  INFILE="$(non_fatal_realpath "$INFILE")"
 fi
 
 # If no output filename given, set it to INFILE and change .docx to .md
 : "${OUTFILE:=${INFILE%.*}.md}"
-OUTFILE="$(realpath "$OUTFILE")"
+OUTFILE="$(non_fatal_realpath "$OUTFILE")"
 
 # Prompt for confirmation if ${OUTFILE} exists.
-if [ -f "$OUTFILE" ]; then
+if [[ -f "$OUTFILE" && -z "$OVERWRITE" ]]; then
   echo "$OUTFILE exists. "
   echo "Do you want to overwrite it?"
   select yn in "Yes" "No"; do
