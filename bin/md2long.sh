@@ -5,10 +5,16 @@
 
 set -e
 
+
+function non_fatal_realpath() {
+  path=$(realpath -q "$1" || echo "$1")
+  echo "$path"
+}
+
 # Figure out where everything is
-SCRIPT="$(realpath "$0")"
+SCRIPT="$(non_fatal_realpath "$0")"
 SCRIPT_PATH="$(dirname "$SCRIPT")"
-FILTERS_PATH="$(realpath "$SCRIPT_PATH/..")"
+FILTERS_PATH="$(non_fatal_realpath "$SCRIPT_PATH/..")"
 export LUA_PATH
 LUA_PATH="$FILTERS_PATH/?.lua;;"
 PANDOC_TEMPLATES="$(dirname "$SCRIPT_PATH")"
@@ -83,7 +89,7 @@ if [[ -z "$OUTFILE" ]]; then
   echo "No --output argument given."
   exit 1
 else
-  OUTFILE="$(realpath "$OUTFILE")"
+  OUTFILE="$(non_fatal_realpath "$OUTFILE")"
 fi
 
 # Prompt for confirmation if ${OUTFILE} exists.
